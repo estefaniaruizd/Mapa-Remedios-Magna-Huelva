@@ -1,0 +1,327 @@
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Los Remedios — Huelva 2025 · Mapa interactivo (FINAL)</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #map { position: absolute; inset: 0 0 0 380px; }
+    #panel {
+      position: absolute; inset: 0 auto 0 0; width: 360px; overflow: auto;
+      background: #ffffff; border-right: 1px solid #e5e5e5; padding: 12px 12px 80px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size: 14px;
+    }
+    #panel h1 { font-size: 18px; margin: 0 0 8px; }
+    #panel h2 { font-size: 15px; margin: 16px 0 6px; }
+    #panel .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; margin-left: 6px; }
+    .pill-itin { background: #e3f2fd; color: #0d47a1; }
+    .pill-ro { background: #f3e5f5; color: #4a148c; }
+    .pill-ctrl { background: #e8f5e9; color: #1b5e20; }
+    .pill-special { background: #fff8e1; color: #bf360c; }
+    .pill-recogida { background: #ede7f6; color: #311b92; }
+    .legend {
+      position: absolute; bottom: 16px; right: 16px; background: #fff; border: 1px solid #ddd; padding: 8px 10px; border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08); font-size: 13px; line-height: 1.3;
+    }
+    .legend div { margin: 4px 0; display: flex; align-items: center; gap: 6px; }
+    .swatch { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+    .swatch-itin { background: #1976d2; }
+    .swatch-ro { background: #6a1b9a; }
+    .swatch-ctrl { background: #2e7d32; }
+    .swatch-special { background: #e65100; }
+    .swatch-recogida { background: #4527a0; }
+    .swatch-pstop { background: #880e4f; }
+    .btnbar {
+      position: absolute; left: 12px; bottom: 12px; display: flex; gap: 8px; z-index: 1000;
+    }
+    .btn {
+      background: #0f766e; color: #fff; border: none; padding: 10px 12px; border-radius: 10px; cursor: pointer; font-weight: 600;
+      box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    }
+    .btn.secondary { background: #64748b; }
+    table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; }
+    th, td { border-bottom: 1px dashed #e0e0e0; padding: 4px 6px; text-align: left; }
+    th { background: #fafafa; position: sticky; top: 0; }
+    .small { font-size: 12px; color: #555; }
+    details summary { cursor: pointer; font-weight: 700; }
+    .callout { background: #fff7ed; border: 1px solid #fed7aa; padding: 8px; border-radius: 8px; margin: 8px 0; }
+    @media (max-width: 1024px) {
+      #map { inset: 340px 0 0 0; }
+      #panel { inset: 0 0 auto 0; width: auto; border-right: 0; border-bottom: 1px solid #e5e5e5; }
+    }
+  </style>
+</head>
+<body>
+  <div id="panel">
+    <h1>Los Remedios (Villarrasa) — Mapa interactivo</h1>
+    <div class="small">
+      Procesión Magna Huelva 2025. <b>Todo en Huelva capital</b>. Capa de calles del itinerario, 14 paradas del Recorrido Oficial (P‑0…P‑13),
+      puntos de control y puntos especiales (PIB, PCC, PEB).
+      <span class="pill pill-itin">Itinerario</span>
+      <span class="pill pill-ro">Recorrido Oficial</span>
+      <span class="pill pill-ctrl">Puntos de control</span>
+      <span class="pill pill-special">Puntos especiales</span>
+      <span class="pill pill-recogida">Cruces/Recogidas</span>
+    </div>
+
+    <div class="callout">
+      <b>Nota:</b> la geocodificación está <u>acotada a Huelva capital</u> (Nominatim con <i>viewbox</i>) y es <u>aproximada</u>.
+      Puedes <b>arrastrar</b> los P‑stops y puntos para afinar. Usa <b>Exportar GeoJSON</b> para compartir o editar en QGIS/MyMaps.
+    </div>
+
+    <h2>Horarios (Ida)</h2>
+    <table>
+      <thead><tr><th>Hora</th><th>Situación</th></tr></thead>
+      <tbody>
+        <tr><td>18:50</td><td>Salida Cruz Alzada</td></tr>
+        <tr><td>18:55</td><td>Salida paso Templo P. Norte</td></tr>
+        <tr><td>19:00</td><td>Licenciado A. de Mora</td></tr>
+        <tr><td>19:05</td><td>Plaza de San Pedro (PC)</td></tr>
+        <tr><td>19:10</td><td>Daoiz</td></tr>
+        <tr><td>19:15</td><td>Santa Fe</td></tr>
+        <tr><td>19:20</td><td>Santa Fe esquina Velarde (PC −30 min)</td></tr>
+        <tr><td>19:25</td><td>Santa Fe nº 1 — Café Rehiletes</td></tr>
+        <tr><td>19:30</td><td>Puerto nº 4</td></tr>
+        <tr><td>19:35</td><td>Plaza Vera+Cruz — La Rosaleda (PC −15 min)</td></tr>
+        <tr><td>19:40</td><td>Méndez Núñez — La Taberna</td></tr>
+        <tr><td>19:45</td><td>Méndez Núñez — “La Ratona” (Punto A)</td></tr>
+        <tr><td>19:50</td><td><b>ENTRADA R. OFICIAL</b> (P‑0)</td></tr>
+        <tr><td>19:55</td><td>P‑1</td></tr>
+        <tr><td>20:00</td><td>P‑2</td></tr>
+        <tr><td>20:05</td><td>P‑3</td></tr>
+        <tr><td>20:10</td><td>P‑4</td></tr>
+        <tr><td>20:15</td><td>P‑5</td></tr>
+        <tr><td>20:20</td><td><b>P‑6 (Parada de rezo)</b></td></tr>
+        <tr><td>20:25</td><td>P‑7</td></tr>
+        <tr><td>20:30</td><td>P‑8</td></tr>
+        <tr><td>20:35</td><td>P‑9</td></tr>
+        <tr><td>20:40</td><td>P‑10</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Horarios (Vuelta)</h2>
+    <table>
+      <thead><tr><th>Hora</th><th>Situación</th></tr></thead>
+      <tbody>
+        <tr><td>20:45</td><td>P‑11</td></tr>
+        <tr><td>20:50</td><td>P‑12</td></tr>
+        <tr><td>20:55</td><td>P. América — P‑13 (Salida R. OFICIAL)</td></tr>
+        <tr><td>21:00</td><td>Padre Marchena</td></tr>
+        <tr><td>21:05</td><td>Fernando el Católico (PIB) (PCC)</td></tr>
+        <tr><td>21:10</td><td>Fernando el Católico</td></tr>
+        <tr><td>21:15</td><td>Fernando el Católico</td></tr>
+        <tr><td>21:20</td><td>Fernando el Católico</td></tr>
+        <tr><td>21:25</td><td>Fernando el Católico</td></tr>
+        <tr><td>21:30</td><td>Palos</td></tr>
+        <tr><td>21:35</td><td>Palos</td></tr>
+        <tr><td>21:40</td><td>Palos</td></tr>
+        <tr><td>21:45</td><td>Palos</td></tr>
+        <tr><td>21:50</td><td>Plaza Quintero Báez (Control/Cruce)</td></tr>
+        <tr><td>21:55</td><td>La Fuente</td></tr>
+        <tr><td>22:00</td><td>La Fuente</td></tr>
+        <tr><td>22:05</td><td>La Fuente</td></tr>
+        <tr><td>22:10</td><td>La Fuente</td></tr>
+        <tr><td>22:15</td><td>Plaza de San Pedro (Control/Cruce)</td></tr>
+        <tr><td>22:20</td><td>Plaza de San Pedro</td></tr>
+        <tr><td>22:25</td><td>Licenciado A. de Mora</td></tr>
+        <tr><td>22:30</td><td>Entrada paso Templo P. Norte</td></tr>
+      </tbody>
+    </table>
+
+    <details>
+      <summary>Observaciones clave</summary>
+      <ul>
+        <li>Recorrido Oficial: 14 paradas equidistantes (chicotás). La nº 6 coincide con la <b>Parada de Rezo</b> (20:20).</li>
+        <li>Tiempos de RO (orientativos y sincronizados): <i>2 minutos andando, 2 de rezo y 1 de maniobra</i>.</li>
+        <li>PEB: Plaza Vera+Cruz (salida de banda hacia C/ Rafael López y Puerto abajo).</li>
+        <li>PIB: C/ Fernando el Católico esquina C/ Padre Marchena (espera en Plaza del Cine).</li>
+        <li>PCC: a partir de C/ Fernando el Católico nº 33 (Casa Colón).</li>
+        <li>Puntos de control de salidas: Plaza de San Pedro (19:05), Santa Fe & Velarde (19:20), Plaza Vera+Cruz & La Rosaleda (19:35), Punto A — Méndez Núñez & La Ratona (19:45).</li>
+      </ul>
+      <div class="small">Fuente: cuadro de horarios e itinerario del documento oficial (Consejo de Hermandades de la Ciudad de Huelva, 2025).</div>
+    </details>
+  </div>
+
+  <div id="map"></div>
+
+  <div class="btnbar">
+    <button id="btn-fit" class="btn" title="Ajustar el mapa a todas las capas">Enfocar recorrido</button>
+    <button id="btn-export" class="btn secondary" title="Exportar a GeoJSON">Exportar GeoJSON</button>
+  </div>
+
+  <div class="legend">
+    <div><span class="swatch swatch-itin"></span> Itinerario (calles)</div>
+    <div><span class="swatch swatch-ro"></span> Recorrido Oficial</div>
+    <div><span class="swatch swatch-pstop"></span> Paradas RO P‑0…P‑13</div>
+    <div><span class="swatch swatch-ctrl"></span> Puntos de control</div>
+    <div><span class="swatch swatch-special"></span> Puntos especiales (PEB/PIB/PCC)</div>
+    <div><span class="swatch swatch-recogida"></span> Controles/cruces de recogida</div>
+  </div>
+
+  <script>
+    // ---- Geocoding bounded to Huelva capital ----
+    const HUELVA_BBOX = {minLon:-7.05, minLat:37.20, maxLon:-6.85, maxLat:37.32};
+    const inHuelva = (lat, lon) =>
+      lon >= HUELVA_BBOX.minLon && lon <= HUELVA_BBOX.maxLon &&
+      lat >= HUELVA_BBOX.minLat && lat <= HUELVA_BBOX.maxLat;
+
+    const geocode = async (q) => {
+      const query = `${q}, Huelva, Andalucía, España`;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&bounded=1` +
+                  `&viewbox=${HUELVA_BBOX.minLon},${HUELVA_BBOX.maxLat},${HUELVA_BBOX.maxLon},${HUELVA_BBOX.minLat}` +
+                  `&q=${encodeURIComponent(query)}`;
+      const resp = await fetch(url, {headers: {'Accept-Language': 'es'}});
+      const results = await resp.json();
+      if (!Array.isArray(results) || results.length === 0) throw new Error("Sin resultados para " + q);
+      const inside = results.filter(r => inHuelva(parseFloat(r.lat), parseFloat(r.lon)));
+      const best = (inside[0] || results[0]);
+      return [parseFloat(best.lat), parseFloat(best.lon), best.display_name];
+    };
+
+    const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+    function distance(a, b) { const toRad = x => x * Math.PI / 180, R = 6371000;
+      const dLat = toRad(b[0]-a[0]), dLng = toRad(b[1]-a[1]), lat1 = toRad(a[0]), lat2 = toRad(b[0]);
+      const y = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
+      return 2*R*Math.asin(Math.sqrt(y)); }
+    function interpolateOnPolyline(line, t) {
+      const segs = []; let total = 0;
+      for (let i=0;i<line.length-1;i++){const a=line[i],b=line[i+1];const d=distance(a,b);segs.push({a,b,d});total+=d;}
+      const target=t*total; let acc=0;
+      for (const {a,b,d} of segs){ if(acc+d>=target){const r=(target-acc)/d; return [a[0]+(b[0]-a[0])*r, a[1]+(b[1]-a[1])*r]; } acc+=d; }
+      return line[line.length-1];
+    }
+
+    const map = L.map('map', {zoomControl:true}).setView([37.258,-6.949], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20, attribution:'&copy; OpenStreetMap'}).addTo(map);
+    const layerItin=L.layerGroup().addTo(map), layerRO=L.layerGroup().addTo(map), layerPStops=L.layerGroup().addTo(map),
+          layerCtrl=L.layerGroup().addTo(map), layerSpecial=L.layerGroup().addTo(map), layerRecogida=L.layerGroup().addTo(map);
+    L.control.layers(null, {
+      "Itinerario": layerItin, "Recorrido Oficial": layerRO, "Paradas RO (P‑0…P‑13)": layerPStops,
+      "Puntos de control": layerCtrl, "Puntos especiales": layerSpecial, "Cruces/Recogidas": layerRecogida
+    }, {collapsed:false}).addTo(map);
+    const bounds = L.latLngBounds();
+
+    // ---- Data (Huelva capital) ----
+    const itinerary = [
+      {name:"Templo (Iglesia de San Pedro)", query:"Iglesia de San Pedro, Plaza de San Pedro"},
+      {name:"C/ Licenciado Juan A. de Mora", query:"Calle Licenciado Juan Antonio de Mora"},
+      {name:"Plaza de San Pedro", query:"Plaza de San Pedro"},
+      {name:"C/ Daoiz", query:"Calle Daoiz"},
+      {name:"Paseo de Santa Fe", query:"Paseo de Santa Fe"},
+      {name:"C/ Puerto", query:"Calle Puerto"},
+      {name:"Plaza de la Vera+Cruz", query:"Plaza de la Vera Cruz"},
+      {name:"C/ Méndez Núñez", query:"Calle Méndez Núñez"},
+      {name:"Plaza de las Monjas (Entrada R.O.)", query:"Plaza de las Monjas"},
+      {name:"C/ Padre Marchena", query:"Calle Padre Marchena"},
+      {name:"C/ Fernando el Católico", query:"Calle Fernando el Católico"},
+      {name:"C/ Palos", query:"Calle Palos"},
+      {name:"Plaza Quintero Báez", query:"Plaza Quintero Báez"},
+      {name:"C/ La Fuente", query:"Calle la Fuente"},
+      {name:"Plaza de San Pedro (vuelta)", query:"Plaza de San Pedro"},
+      {name:"C/ Licenciado Juan A. de Mora (vuelta)", query:"Calle Licenciado Juan Antonio de Mora"},
+      {name:"Templo (entrada)", query:"Iglesia de San Pedro, Plaza de San Pedro"}
+    ];
+
+    const controlSalida = [
+      {name:"PC — Plaza de San Pedro", time:"19:05", query:"Plaza de San Pedro"},
+      {name:"PC — Santa Fe & Velarde (−30 min)", time:"19:20", query:"Paseo de Santa Fe con Calle Velarde"},
+      {name:"PC — Plaza Vera+Cruz & La Rosaleda (−15 min)", time:"19:35", query:"Plaza de la Vera Cruz"},
+      {name:"Punto A — Méndez Núñez & “La Ratona”", time:"19:45", query:"Calle Méndez Núñez 38"}
+    ];
+
+    const controlRecogidas = [
+      {name:"Control/Cruce — Plaza Quintero Báez", time:"21:50", query:"Plaza Quintero Báez"},
+      {name:"Control/Cruce — Plaza de San Pedro", time:"22:15", query:"Plaza de San Pedro"}
+    ];
+
+    const especiales = [
+      {code:"PEB", name:"PEB — Punto de extracción de banda", query:"Plaza de la Vera Cruz", note:"Salida de banda a C/ Rafael López y Puerto abajo."},
+      {code:"PIB", name:"PIB — Punto de incorporación de banda", query:"Calle Fernando el Católico con Calle Padre Marchena", note:"Espera en Plaza del Cine."},
+      {code:"PCC", name:"PCC — Cambio de cuadrilla", query:"Calle Fernando el Católico 33", note:"Casa Colón, aprox. nº 33."}
+    ];
+
+    const roAnchors = [
+      {name:"P‑0 — Entrada RO", time:"19:50", query:"Plaza de las Monjas"},
+      {name:"Padre Marchena", query:"Calle Padre Marchena"},
+      {name:"Fernando el Católico", query:"Calle Fernando el Católico"},
+      {name:"P‑13 — Salida RO (Hotel Tartessos)", time:"20:55", query:"Hotel Eurostars Tartessos, Huelva"}
+    ];
+    const pStopTimes = ["19:50","19:55","20:00","20:05","20:10","20:15","20:20","20:25","20:30","20:35","20:40","20:45","20:50","20:55"];
+
+    async function renderItinerary() {
+      const points = [];
+      for (const item of itinerary) {
+        try {
+          const [lat, lng, label] = await geocode(item.query);
+          points.push([lat,lng]);
+          const m = L.circleMarker([lat,lng], {radius:5, color:"#1976d2"}).bindPopup(`<b>${item.name}</b><br/><span class="small">${label}</span>`);
+          m.addTo(layerItin); bounds.extend([lat,lng]); await sleep(200);
+        } catch(e){ console.warn(e); }
+      }
+      if (points.length>=2) L.polyline(points, {color:"#1976d2", weight:4, opacity:0.8}).addTo(layerItin);
+    }
+    async function renderControlSalida() {
+      for (const c of controlSalida) {
+        try { const [lat,lng,label]=await geocode(c.query);
+          L.circleMarker([lat,lng], {radius:7, color:"#2e7d32"}).addTo(layerCtrl)
+            .bindPopup(`<b>${c.name}</b><br/>Hora: <b>${c.time}</b><br/><span class="small">${label}</span>`);
+          bounds.extend([lat,lng]); await sleep(200);
+        } catch(e){ console.warn(e); }
+      }
+    }
+    async function renderRecogidas() {
+      for (const c of controlRecogidas) {
+        try { const [lat,lng,label]=await geocode(c.query);
+          L.circleMarker([lat,lng], {radius:7, color:"#4527a0"}).addTo(layerRecogida)
+            .bindPopup(`<b>${c.name}</b><br/>Hora: <b>${c.time}</b><br/><span class="small">${label}</span>`);
+          bounds.extend([lat,lng]); await sleep(200);
+        } catch(e){ console.warn(e); }
+      }
+    }
+    async function renderEspeciales() {
+      for (const c of especiales) {
+        try { const [lat,lng,label]=await geocode(c.query);
+          L.circleMarker([lat,lng], {radius:8, color:"#e65100"}).addTo(layerSpecial)
+            .bindPopup(`<b>${c.name}</b><br/><span class="small">${c.note||""}</span><br/><span class="small">${label}</span>`);
+          bounds.extend([lat,lng]); await sleep(200);
+        } catch(e){ console.warn(e); }
+      }
+    }
+    async function renderRO() {
+      const pts=[];
+      for (const a of roAnchors) {
+        try { const [lat,lng,label]=await geocode(a.query); pts.push([lat,lng]); bounds.extend([lat,lng]); await sleep(200); }
+        catch(e){ console.warn(e); }
+      }
+      if (pts.length>=2) {
+        L.polyline(pts, {color:"#6a1b9a", weight:5, opacity:0.85, dashArray:"6 8"}).addTo(layerRO);
+        const n=14;
+        for (let i=0;i<n;i++){
+          const t=i/(n-1); const [lat,lng]=interpolateOnPolyline(pts,t); const time=pStopTimes[i]||"";
+          const marker=L.marker([lat,lng], {draggable:true, title:`P-${i}`}).addTo(layerPStops);
+          marker.bindPopup(`<b>P-${i}</b>${time ? " — <b>"+time+"</b>" : ""}${i===6 ? "<br/><i>Parada de Rezo</i>":""}`);
+        }
+      }
+    }
+    async function main(){ await renderItinerary(); await renderRO(); await renderControlSalida(); await renderRecogidas(); await renderEspeciales(); if(bounds.isValid()) map.fitBounds(bounds.pad(0.2)); }
+    main();
+
+    document.getElementById('btn-fit').addEventListener('click', () => { if (bounds.isValid()) map.fitBounds(bounds.pad(0.2)); });
+    document.getElementById('btn-export').addEventListener('click', () => {
+      const fc={type:"FeatureCollection",features:[]};
+      const add=(layer,props={})=>layer.eachLayer(l=>{ try{ const gj=l.toGeoJSON(); gj.properties=Object.assign({},gj.properties||{},props); if(l.getPopup&&l.getPopup()){gj.properties.popup=l.getPopup().getContent();} fc.features.push(gj);}catch(e){} });
+      add(layerItin,{layer:"Itinerario"}); add(layerRO,{layer:"RecorridoOficial"}); add(layerPStops,{layer:"ParadasRO"});
+      add(layerCtrl,{layer:"PuntosControl"}); add(layerSpecial,{layer:"PuntosEspeciales"}); add(layerRecogida,{layer:"CrucesRecogidas"});
+      const blob=new Blob([JSON.stringify(fc,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download='remedios_huelva_2025_final.geojson'; document.body.appendChild(a); a.click();
+      setTimeout(()=>{URL.revokeObjectURL(url); a.remove();},500);
+    });
+  </script>
+</body>
+</html>
